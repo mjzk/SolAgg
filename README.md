@@ -29,9 +29,24 @@ A mini Data aggregator software that collects and processes data from the Solana
 
 ### Usage of API endpoints
 
-### Build
 
-### Run
+### Build and Run
+
+(NOTE: assumed you have installed the Rust nightly toolchain in your dev env.)
+
+1. start the solagg in release mode in the repo root for the perf eval
+```bash
+cargo run --release -- start
+```
+2. start the solagg with debug logging
+```bash
+RUST_LOG=solagg=debug cargo run --release -- start
+```
+
+3. start the solagg with trace logging(WARN: too many stdou)
+```bash
+RUST_LOG=solagg=trace cargo run --release -- start
+```
 
 ### Test
 
