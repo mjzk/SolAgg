@@ -29,6 +29,28 @@ A mini Data aggregator software that collects and processes data from the Solana
 
 ### Usage of API endpoints
 
+* query the current number of total transactions in curruent epoch
+```bash
+curl -sS http://127.0.0.1:3666/transactions/count 
+```
+
+* query the transaction by id
+```bash
+curl -sS 'http://127.0.0.1:3666/transactions?id=fGLvYwnzu8wNbzKmFBJuwNZhcVXuoh4ynpcQEBsRoKX14CoYDtAZd9SCYayaR63X36Sv2sTiXW8yvhmYgH8Ux7A'
+```
+
+* query the transactions by day
+```bash
+curl -sS 'http://127.0.0.1:3666/transactions?day=16/07/2024'
+```
+
+* Arbitrary SQL query
+```bash
+curl -X POST -d 'select count(1) as count from transactions where fee=5000' -sS http://127.0.0.1:3666/sql
+```
+```bash
+curl -X POST -d 'select block_time,fee from transactions where fee>5000 limit 2' -sS http://127.0.0.1:3666/sql
+```
 
 ### Build and Run
 
