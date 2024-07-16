@@ -142,10 +142,10 @@ mod unit_tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_transaction_store_query_timestamp() -> eyre::Result<()> {
-        env_logger::Builder::new()
-            .target(env_logger::Target::Stdout)
-            .filter_module("solagg::store", log::LevelFilter::Trace)
-            .init();
+        // env_logger::Builder::new()
+        //     .target(env_logger::Target::Stdout)
+        //     .filter_module("solagg::store", log::LevelFilter::Trace)
+        //     .init();
         let mocked = true;
         let tx_store = TransactionStore::new(mocked)?;
         println!("tx_store.size:\n{:#?}", tx_store.size());
