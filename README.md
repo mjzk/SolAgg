@@ -5,7 +5,7 @@ A mini Data aggregator software that collects and processes data from the Solana
 ![SolAgg Preview](https://github.com/mjzk/SolAgg/blob/main/docs/solagg_1_opt.gif)
 
 [or watch the video](https://youtu.be/brjqA6-Nv2I)
-### Key Features
+## Key Features
 
 1. **Data Retrieval:** capable of retrieving transaction and account data from the Solana blockchain on devnet or testnet. Utilise Solana's API or SDK to interact with the blockchain and fetch relevant data.
 
@@ -17,17 +17,17 @@ A mini Data aggregator software that collects and processes data from the Solana
 
 5. **API Integration:** RESTful API layer to expose the aggregated data to external systems and applications. The API support various queries to retrieve transaction history, account details, and other relevant information.
 
-### Architecture
+## Architecture
 
 
-### Notes on Design and Implementation
+## Notes on Design and Implementation
 1. using solana RPC client
 2. using Rust typed objects and serde
 3. using solana RPC websocket for continuously monitoring
 4. using Arrow for in-memory storage and SQL query
 5. using tokio and type-safe wrapper for unified API layer
 
-### Usage of API endpoints
+## Usage of API endpoints
 
 * query the current number of total transactions in curruent epoch
 ```bash
@@ -52,7 +52,7 @@ curl -X POST -d 'select count(1) as count from transactions where fee=5000' -sS 
 curl -X POST -d 'select block_time,fee from transactions where fee>5000 limit 2' -sS http://127.0.0.1:3666/sql
 ```
 
-### Build and Run
+## Build and Run
 
 (NOTE: assumed you have installed the Rust nightly toolchain in your dev env.)
 
@@ -70,8 +70,8 @@ RUST_LOG=solagg=debug cargo run --release -- start
 RUST_LOG=solagg=trace cargo run --release -- start
 ```
 
-### Test
+## Test
 
-### Benchmark
+## Benchmark
 
-### Outlook
+## Outlook
