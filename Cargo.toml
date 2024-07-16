@@ -1,0 +1,35 @@
+cargo-features = ["edition2024"]
+
+[package]
+name = "solagg"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+hyper = { version = "1.4", features = ["full"] }
+tokio = { version = "1.38", features = ["full"] }
+http-body-util = "0.1"
+hyper-util = { version = "0.1", features = ["full"] }
+tokio-tungstenite = { version = "0.23", features = ["native-tls"] }
+solana-client = "2.0"
+solana-sdk = "2.0"
+solana-transaction-status = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+eyre = "0.6"
+datafusion = "40.0"
+env_logger = "0.11"
+log = "0.4"
+rayon = "1.10"
+futures-util = "0.3"
+axum = "0.7"
+arrow-json = "52.1"
+chrono = "0.4"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "bench_fetch_txs"
+harness = false
