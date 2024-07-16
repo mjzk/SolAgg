@@ -4,6 +4,7 @@ A mini Data aggregator software that collects and processes data from the Solana
 
 ![SolAgg Preview](https://github.com/mjzk/SolAgg/blob/main/docs/solagg_1_opt.gif)
 
+[or watch the video](https://youtu.be/brjqA6-Nv2I)
 ### Key Features
 
 1. **Data Retrieval:** capable of retrieving transaction and account data from the Solana blockchain on devnet or testnet. Utilise Solana's API or SDK to interact with the blockchain and fetch relevant data.
