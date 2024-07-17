@@ -1,4 +1,3 @@
-use datafusion::arrow::{array::RecordBatch, json::ReaderBuilder};
 use futures_util::{SinkExt, StreamExt};
 use log::trace;
 use serde_json::json;
@@ -11,7 +10,6 @@ use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
 use crate::{
     fetch::{SolFetcher, SOL_RPC_URL},
-    parse::Transaction,
     store::TransactionStore,
 };
 
@@ -48,19 +46,6 @@ pub async fn start_streamer(streamer: TheadSafeStreamer) -> eyre::Result<()> {
     Ok(())
 }
 
-// pub(crate) async fn query(
-//     streamer: TheadSafeStreamer,
-//     sql: &str,
-//     table_name: &str,
-// ) -> {
-//     Ok(streamer
-//         .read()
-//         .await
-//         .tx_store
-//         .query(sql, table_name)
-//         .await?)
-// }
-
 pub(crate) async fn query_to_json(
     streamer: TheadSafeStreamer,
     sql: &str,
@@ -96,13 +81,13 @@ async fn process_sol_notifications(
                         slot
                     );
                     let batch = sol_fetcher.fetch_transactions_as_batch(slot).await?;
-                    tx_store.append_batch(batch);
+                    tx_store.append_batch(batch, slot);
                 }
             }
         }
         tx_store.current_slot = slot;
 
-        tx_store.append_batch(batch);
+        tx_store.append_batch(batch, slot);
     }
     trace!("??? process_sol_notifications exited.");
     Ok(())
@@ -112,13 +97,13 @@ async fn watch_sol_rpc_ws(tx: UnboundedSender<u64>) -> eyre::Result<()> {
     let (ws_stream, _) = connect_async(SOL_RPC_WS).await?;
     let (mut write, mut read) = ws_stream.split();
 
-    let block_sub_msg = json!({
+    let slot_sub_msg = json!({
       "jsonrpc": "2.0",
       "id": "1",
       "method": "slotSubscribe",
     });
-    trace!("send block_sub_msg");
-    write.send(Message::Text(block_sub_msg.to_string())).await?;
+    trace!("send slot_sub_msg");
+    write.send(Message::Text(slot_sub_msg.to_string())).await?;
 
     trace!("Subscribed to transaction and account change notifications.");
     trace!("Watching for changes...");
@@ -143,6 +128,7 @@ async fn watch_sol_rpc_ws(tx: UnboundedSender<u64>) -> eyre::Result<()> {
                             }
                         }
                         "accountNotification" => {
+                            //TODO
                             trace!("Account changed: {}", json["params"]["result"]["value"]);
                         }
                         _ => trace!("Received other notification: {}", text),

@@ -43,11 +43,12 @@ async fn main() -> eyre::Result<()> {
             let s = streamer.clone();
             info!("To start SolAgg streamer...");
             let fut_streamer = tokio::spawn(async move { start_streamer(s).await });
-            let fut_api_srv = tokio::spawn(async move { api_server(streamer).await });
+            let s = streamer.clone();
+            let fut_api_srv = tokio::spawn(async move { api_server(s).await });
             let res = tokio::try_join!(fut_streamer, fut_api_srv);
             match res {
                 Ok((res0, res1)) => {
-                    log::trace!("solagg normal exit; res0 = {:?}, res1 = {:?}", res0, res1);
+                    log::trace!("solagg normal exit; res0 = {:?}, res1 = {:?}", res0, res1,);
                 }
                 Err(err) => {
                     log::error!("solagg failed; error = {}", err);

@@ -12,8 +12,9 @@ const MOCKED_EPOCH_INIT_LEN: u64 = 25; //NOTE: 30 rps for ankr
 #[derive(Debug)]
 pub(crate) struct TransactionStore {
     pub(crate) tx_batches: Vec<RecordBatch>,
-    pub(crate) current_epoch: u64,
+    pub(crate) init_slot: u64,
     pub(crate) current_slot: u64,
+    pub(crate) start_slot_next_epoch: u64,
     mocked: bool,
 }
 
@@ -21,15 +22,14 @@ impl TransactionStore {
     pub(crate) fn new(mocked: bool) -> eyre::Result<Self> {
         let sol_fetcher = SolFetcher::new(SOL_RPC_URL);
         let cur_epoch = sol_fetcher.get_current_epoch()?;
-        let current_epoch = cur_epoch.current_epoch();
-        let current_slot = cur_epoch.current_slot();
+        let init_slot = cur_epoch.current_slot();
         let start_slot = if mocked {
-            current_slot - MOCKED_EPOCH_INIT_LEN
+            init_slot - MOCKED_EPOCH_INIT_LEN
         } else {
             cur_epoch.start_slot()
         };
 
-        let range: Vec<u64> = (start_slot..=current_slot).collect();
+        let range: Vec<u64> = (start_slot..=init_slot).collect();
         let mut tx_batches = Vec::with_capacity(range.len());
         let windows = range.chunks(RPS_LIMIT);
         trace!("slot windows: {:#?}", windows);
@@ -52,15 +52,27 @@ impl TransactionStore {
             }
             timer = Instant::now();
         }
+        let start_slot_next_epoch = cur_epoch.start_slot_next_epoch();
         Ok(Self {
             tx_batches,
-            current_epoch,
-            current_slot,
+            start_slot_next_epoch,
+            init_slot,
+            current_slot: init_slot,
             mocked,
         })
     }
 
-    pub(crate) fn append_batch(&mut self, batch: RecordBatch) {
+    pub(crate) fn append_batch(&mut self, batch: RecordBatch, slot: u64) {
+        //NOTE: corner case#2 handle epoch switch, onece per epoch
+        if slot == self.start_slot_next_epoch {
+            self.tx_batches.clear();
+        }
+        if slot >= self.start_slot_next_epoch {
+            let sol_fetcher = SolFetcher::new(SOL_RPC_URL);
+            if let Ok(cur_epoch) = sol_fetcher.get_current_epoch() {
+                self.start_slot_next_epoch = cur_epoch.start_slot_next_epoch();
+            }
+        }
         self.tx_batches.push(batch);
     }
 

@@ -21,9 +21,9 @@ pub struct SolFetcher {
 pub(crate) struct CurrentEpoch(EpochInfo);
 
 impl CurrentEpoch {
-    pub(crate) fn current_epoch(&self) -> u64 {
-        self.0.epoch
-    }
+    // pub(crate) fn current_epoch(&self) -> u64 {
+    //     self.0.epoch
+    // }
 
     pub(crate) fn start_slot(&self) -> u64 {
         self.0.absolute_slot - self.0.slot_index
@@ -31,6 +31,10 @@ impl CurrentEpoch {
 
     pub(crate) fn current_slot(&self) -> u64 {
         self.0.absolute_slot
+    }
+
+    pub(crate) fn start_slot_next_epoch(&self) -> u64 {
+        self.start_slot() + self.0.slots_in_epoch
     }
 }
 
