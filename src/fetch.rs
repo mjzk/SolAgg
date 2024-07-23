@@ -1,11 +1,13 @@
-use crate::parse::{parse_transaction, Transaction};
+use crate::types::{parse_transaction, Transaction};
 use datafusion::arrow::{array::RecordBatch, json::ReaderBuilder};
 use eyre::Ok;
 use log::trace;
 use solana_client::{rpc_client::RpcClient, rpc_config::RpcBlockConfig};
-use solana_sdk::{commitment_config::CommitmentConfig, epoch_info::EpochInfo};
+use solana_sdk::{
+    account::Account, commitment_config::CommitmentConfig, epoch_info::EpochInfo, pubkey::Pubkey,
+};
 use solana_transaction_status::{UiConfirmedBlock, UiTransactionEncoding};
-use std::{sync::Arc, time::Duration};
+use std::{str::FromStr, sync::Arc, time::Duration};
 use tokio::time::sleep;
 
 // pub const SOL_RPC_URL_HELIUS: &str =
@@ -49,6 +51,13 @@ impl SolFetcher {
         Ok(CurrentEpoch(epoch_info))
     }
 
+    #[allow(unused)]
+    pub(crate) fn fetch_account_sync(&self, pubkey: &str) -> eyre::Result<Account> {
+        let pubkey = Pubkey::from_str(pubkey)?;
+        let account = self.rpc_client.get_account(&pubkey)?;
+        Ok(account)
+    }
+
     #[inline(always)]
     pub(crate) async fn fetch_sol_block(&self, slot: u64) -> eyre::Result<UiConfirmedBlock> {
         const MAX_RETRIES: u32 = 5;
@@ -57,16 +66,7 @@ impl SolFetcher {
         let mut retry_delay = INITIAL_RETRY_DELAY;
 
         for attempt in 0..MAX_RETRIES {
-            let result = self.rpc_client.get_block_with_config(
-                slot,
-                RpcBlockConfig {
-                    encoding: Some(UiTransactionEncoding::Binary),
-                    transaction_details: None,
-                    rewards: None,
-                    commitment: None,
-                    max_supported_transaction_version: Some(0),
-                },
-            );
+            let result = self.fetch_sol_block_sync(slot);
 
             match result {
                 std::result::Result::Ok(block) => return Ok(block),
@@ -170,6 +170,23 @@ mod unit_tests {
         let batch = sol_fetcher.fetch_transactions_as_batch_sync(slot)?;
         // println!("batch: {:#?}", batch);
         assert_eq!(batch.num_rows(), 15);
+        Ok(())
+    }
+
+    #[test]
+    fn test_fetch_account_sync() -> eyre::Result<()> {
+        let sol_fetcher = SolFetcher::new(SOL_RPC_URL);
+        //REF: https://docs.solanalabs.com/runtime/programs
+        let some_program_ids = vec![
+            "11111111111111111111111111111111",
+            "Stake11111111111111111111111111111111111111",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        ];
+        for pid in some_program_ids {
+            let account = sol_fetcher.fetch_account_sync(pid)?;
+            println!("account: {:#?}", account);
+        }
         Ok(())
     }
 }

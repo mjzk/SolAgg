@@ -62,6 +62,19 @@ pub(crate) fn parse_transaction(
     })
 }
 
+#[allow(unused)]
+//NOTE parts from solana_sdk::account::Account
+#[derive(Debug, Serialize, Deserialize)]
+struct Account {
+    pubkey: String,
+    lamports: u64,
+    owner: String,
+    executable: bool,
+    rent_epoch: u64,
+    data: Vec<u8>,
+    data_len: usize,
+}
+
 #[cfg(test)]
 mod unit_tests {
     use crate::fetch::{SolFetcher, SOL_RPC_URL};
